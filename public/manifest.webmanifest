@@ -1,0 +1,18 @@
+{
+  "name": "Cube11 — AI video studio",
+  "short_name": "Cube11",
+  "description": "Make Reels, Shorts, TikTok and WhatsApp Status with AI. Free preview, pay only when you love it.",
+  "start_url": "/projects",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
