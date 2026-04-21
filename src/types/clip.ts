@@ -7,6 +7,7 @@ export interface Subtitle {
 
 export interface Music {
   enabled: boolean;
+  trackUrl?: string;
   trackId?: string;
   trackName?: string;
   mood?: string;
@@ -29,13 +30,18 @@ export interface TrimSpeed {
 export interface Clip {
   id: string;
   projectId: string;
+  templateId?: string;
   order: number;
   title: string;
   prompt: string;
   thumbnail: string;
   videoUrl: string;
   durationSec: number;
-  status: "ready" | "rendering" | "preview";
+  width?: number;
+  height?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  status: "ready" | "rendering" | "preview" | "failed" | "cancelled";
   subtitles: Subtitle;
   music: Music;
   overlays: OverlayText[];

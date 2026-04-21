@@ -14,6 +14,9 @@ export function TrimSpeedTab() {
   const patch = useEditorStore((s) => s.patchTrim);
   if (!clip) return null;
   const t = clip.trim;
+  const maxDuration = Math.max(0.1, clip.durationSec || 0);
+  const clampedStart = Math.max(0, Math.min(t.startSec, maxDuration));
+  const clampedEnd = Math.max(clampedStart, Math.min(t.endSec, maxDuration));
 
   return (
     <div className="space-y-8">
@@ -23,19 +26,25 @@ export function TrimSpeedTab() {
             <Scissors className="h-4 w-4" /> Trim
           </Label>
           <div className="font-mono text-xs text-muted-foreground">
-            {formatDuration(t.startSec)} – {formatDuration(t.endSec)}
+            {formatDuration(clampedStart)} – {formatDuration(clampedEnd)}
           </div>
         </div>
         <Slider
-          value={[t.startSec, t.endSec]}
+          value={[clampedStart, clampedEnd]}
           min={0}
-          max={clip.durationSec}
+          max={maxDuration}
           step={0.1}
-          onValueChange={([s, e]) => patch({ startSec: s, endSec: e })}
+          onValueChange={([s, e]) =>
+            patch({
+              startSec: Math.max(0, Math.min(s, maxDuration)),
+              endSec: Math.max(s, Math.min(e, maxDuration)),
+            })
+          }
+          disabled={maxDuration <= 0.1}
         />
         <div className="flex justify-between text-[11px] text-muted-foreground">
           <span>0:00</span>
-          <span>{formatDuration(clip.durationSec)}</span>
+          <span>{formatDuration(maxDuration)}</span>
         </div>
       </div>
 

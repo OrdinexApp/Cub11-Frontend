@@ -1,20 +1,63 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useQueries } from "@tanstack/react-query";
 import { Download, Share2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useProjectsStore } from "@/lib/stores/projects-store";
 import { EmptyState } from "@/components/projects/EmptyState";
+import { useProjects } from "@/lib/api/use-projects";
+import { useAuthStore } from "@/lib/stores/auth-store";
+import { api, asList } from "@/lib/api/client";
+import { mapClip } from "@/lib/api/adapters";
+import { clipsByProjectKey } from "@/lib/api/use-clips";
 import { PLATFORM_EMOJI, PLATFORM_LABELS } from "@/lib/data/templates";
+import { getFriendlyErrorMessage } from "@/lib/ui/error-messages";
 import { formatDuration, timeAgo } from "@/lib/utils";
+import type { ClipDTO } from "@/lib/api/types";
+import type { Project } from "@/types/project";
+import type { Clip } from "@/types/clip";
 
 export default function MyVideosPage() {
-  const projects = useProjectsStore((s) => s.projects);
-  const clips = projects.flatMap((p) =>
-    p.clips.map((c) => ({ project: p, clip: c })),
-  );
+  const token = useAuthStore((s) => s.accessToken);
+  const projects = useProjects();
+
+  const clipQueries = useQueries({
+    queries: (projects.data ?? []).map((p) => ({
+      queryKey: clipsByProjectKey(p.id),
+      enabled: !!token,
+      queryFn: async () => {
+        const raw = await api<ClipDTO[] | { items?: ClipDTO[] }>(
+          `/clips/by-project/${p.id}`,
+        );
+        return asList<ClipDTO>(raw).map(mapClip);
+      },
+    })),
+  });
+
+  const flat: Array<{ project: Project; clip: Clip }> = React.useMemo(() => {
+    const list: Array<{ project: Project; clip: Clip }> = [];
+    (projects.data ?? []).forEach((p, i) => {
+      const cs = clipQueries[i]?.data ?? [];
+      cs.filter((c) => c.status === "ready").forEach((clip) =>
+        list.push({ project: p, clip }),
+      );
+    });
+    return list.sort(
+      (a, b) =>
+        new Date(b.project.updatedAt).getTime() -
+        new Date(a.project.updatedAt).getTime(),
+    );
+  }, [projects.data, clipQueries]);
+
+  const isLoading =
+    projects.isLoading || clipQueries.some((q) => q.isLoading);
+  const hasQueryError =
+    projects.isError || clipQueries.some((q) => q.isError);
+  const firstError =
+    projects.error ?? clipQueries.find((q) => q.error)?.error ?? null;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 md:px-8 py-8 md:py-12">
@@ -25,14 +68,40 @@ export default function MyVideosPage() {
         </p>
       </header>
 
-      {clips.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="aspect-[9/16] animate-pulse rounded-2xl bg-muted/40"
+            />
+          ))}
+        </div>
+      ) : hasQueryError ? (
+        <EmptyState
+          title="Couldn't load videos"
+          description={getFriendlyErrorMessage(
+            firstError,
+            "We couldn't fetch your rendered videos right now.",
+          )}
+          ctaLabel="Retry"
+          onCta={() => {
+            void projects.refetch();
+            clipQueries.forEach((q) => {
+              void q.refetch();
+            });
+          }}
+        />
+      ) : flat.length === 0 ? (
         <EmptyState
           title="No rendered videos yet"
           description="Once you render a clip, it'll show up here ready to share."
+          ctaLabel="Create first video"
+          ctaHref="/new"
         />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {clips.map(({ project, clip }) => (
+          {flat.map(({ project, clip }) => (
             <div
               key={clip.id}
               className="group overflow-hidden rounded-2xl border border-border/60 bg-card"
@@ -43,7 +112,7 @@ export default function MyVideosPage() {
               >
                 <Image
                   src={clip.thumbnail}
-                  alt={clip.title}
+                  alt={clip.title || "Clip"}
                   fill
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -58,7 +127,8 @@ export default function MyVideosPage() {
                   variant="secondary"
                   className="absolute top-3 left-3 backdrop-blur text-[10px]"
                 >
-                  {PLATFORM_EMOJI[project.platform]} {PLATFORM_LABELS[project.platform]}
+                  {PLATFORM_EMOJI[project.platform]}{" "}
+                  {PLATFORM_LABELS[project.platform]}
                 </Badge>
                 <Badge
                   variant="outline"
@@ -73,9 +143,16 @@ export default function MyVideosPage() {
                   {project.title} · {timeAgo(project.updatedAt)}
                 </p>
                 <div className="mt-3 flex gap-2">
-                  <Button size="sm" variant="secondary" className="flex-1">
-                    <Download className="h-3.5 w-3.5" />
-                    Save
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="secondary"
+                    className="flex-1"
+                  >
+                    <a href={clip.videoUrl} download>
+                      <Download className="h-3.5 w-3.5" />
+                      Save
+                    </a>
                   </Button>
                   <Button size="sm" variant="ghost">
                     <Share2 className="h-3.5 w-3.5" />

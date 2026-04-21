@@ -22,35 +22,22 @@ export interface PreviewResult {
   estimatedRenderCredits: number;
 }
 
+/**
+ * Local-only preview. The backend has no preview endpoint — only the paid
+ * `POST /clips/by-project/{id}/generate` exists. We keep a free client-side
+ * mock so users can iterate on prompts before committing credits.
+ * Once the backend exposes a preview endpoint, swap the body of `mutationFn`.
+ */
 export function usePreviewGeneration() {
   return useMutation({
     mutationFn: async (req: PreviewRequest): Promise<PreviewResult> => {
-      await sleep(1800);
+      await sleep(1200);
       const idx = Math.floor(Math.random() * PREVIEW_VIDEOS.length);
       const seed = req.templateId ?? req.prompt ?? "preview";
       return {
         previewUrl: PREVIEW_VIDEOS[idx],
         thumbnail: `https://picsum.photos/seed/${encodeURIComponent(seed)}/600/900`,
-        estimatedRenderCredits: 12,
-      };
-    },
-  });
-}
-
-export interface RenderRequest extends PreviewRequest {
-  previewUrl: string;
-  thumbnail: string;
-  credits: number;
-}
-
-export function useRenderHd() {
-  return useMutation({
-    mutationFn: async (req: RenderRequest) => {
-      await sleep(1200);
-      return {
-        videoUrl: req.previewUrl,
-        thumbnail: req.thumbnail,
-        durationSec: 8,
+        estimatedRenderCredits: 5,
       };
     },
   });

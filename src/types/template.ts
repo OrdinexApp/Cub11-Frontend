@@ -14,6 +14,7 @@ export interface Template {
   platform: TemplatePlatform;
   aspect: "9:16" | "16:9" | "1:1" | "4:5";
   durationSec: number;
+  previewImageUrl?: string;
   thumbnail: string;
   previewVideo?: string;
   mood: TemplateMood;

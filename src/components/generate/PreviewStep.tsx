@@ -14,33 +14,39 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GenerationProgress } from "./GenerationProgress";
 import { useGenerationStore } from "@/lib/stores/generation-store";
-import { useCreditsStore } from "@/lib/stores/credits-store";
-import { useProjectsStore } from "@/lib/stores/projects-store";
-import { usePreviewGeneration, useRenderHd } from "@/lib/api/use-generation";
+import { useMe } from "@/lib/api/use-auth";
+import { useCreateProject } from "@/lib/api/use-projects";
+import { useGenerateClip } from "@/lib/api/use-clips";
+import { usePreviewGeneration } from "@/lib/api/use-generation";
 import { useTemplates } from "@/lib/api/use-templates";
+import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { STYLES } from "@/lib/data/styles";
-import type { Project } from "@/types/project";
-import type { Clip } from "@/types/clip";
 import type { TemplatePlatform } from "@/types/template";
+import { getFriendlyErrorMessage } from "@/lib/ui/error-messages";
 
 export function PreviewStep({ projectId }: { projectId?: string }) {
   const router = useRouter();
   const gen = useGenerationStore();
   const reset = useGenerationStore((s) => s.reset);
-  const charge = useCreditsStore((s) => s.charge);
-  const balance = useCreditsStore((s) => s.balance);
-  const addProject = useProjectsStore((s) => s.addProject);
-  const appendClip = useProjectsStore((s) => s.appendClip);
+
+  const me = useMe();
+  const balance = me.data?.credits_remaining ?? 0;
 
   const { data: templates } = useTemplates();
   const template = templates?.find((t) => t.id === gen.templateId);
   const style = STYLES.find((s) => s.id === gen.styleId);
 
   const preview = usePreviewGeneration();
-  const render = useRenderHd();
+  const createProject = useCreateProject();
+  const generate = useGenerateClip();
+
   const [previewUrl, setPreviewUrl] = React.useState<string | undefined>();
   const [thumbnail, setThumbnail] = React.useState<string | undefined>();
-  const [credits, setCredits] = React.useState(12);
+  const [credits, setCredits] = React.useState(5);
+  const [resolvedProjectId, setResolvedProjectId] = React.useState<
+    string | undefined
+  >(projectId);
+  const [renderError, setRenderError] = React.useState<string | undefined>();
 
   React.useEffect(() => {
     if (!gen.templateId && !gen.prompt) {
@@ -53,72 +59,88 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
 
   async function runPreview() {
     setPreviewUrl(undefined);
-    const r = await preview.mutateAsync({
-      prompt: gen.prompt,
-      templateId: gen.templateId,
-      styleId: gen.styleId,
-    });
-    setPreviewUrl(r.previewUrl);
-    setThumbnail(r.thumbnail);
-    setCredits(r.estimatedRenderCredits);
+    setRenderError(undefined);
+    try {
+      const r = await preview.mutateAsync({
+        prompt: gen.prompt,
+        templateId: gen.templateId,
+        styleId: gen.styleId,
+      });
+      setPreviewUrl(r.previewUrl);
+      setThumbnail(r.thumbnail);
+      setCredits(r.estimatedRenderCredits);
+    } catch (err) {
+      setRenderError(
+        getFriendlyErrorMessage(
+          err,
+          "Couldn't generate preview right now. Please retry.",
+        ),
+      );
+    }
   }
 
   async function acceptAndRender() {
     if (!previewUrl || !thumbnail) return;
-    if (balance < credits) {
-      router.push("/account");
-      return;
+    setRenderError(undefined);
+
+    const platform: TemplatePlatform =
+      template?.platform ?? gen.platform ?? "instagram-reels";
+
+    let targetProjectId = resolvedProjectId;
+
+    try {
+      if (!targetProjectId) {
+        const created = await createProject.mutateAsync({
+          title: template?.title ?? gen.prompt?.slice(0, 48) ?? "New project",
+          description:
+            template?.description ?? gen.prompt ?? "Generated with Cube11.",
+          platform,
+          aspect_ratio: template?.aspect ?? "9:16",
+          cover_image_url: thumbnail,
+        });
+        targetProjectId = created.id;
+        setResolvedProjectId(created.id);
+      }
+
+      const params: Record<string, unknown> = {};
+      if (gen.styleId) params.style = gen.styleId;
+
+      const clipTitle =
+        template?.title ?? (gen.prompt ? gen.prompt.slice(0, 80) : undefined);
+
+      const result = await generate.mutateAsync({
+        projectId: targetProjectId,
+        body: {
+          title: clipTitle,
+          template_id: gen.templateId,
+          prompt: gen.prompt,
+          params,
+        },
+      });
+
+      reset();
+      // The mutation now returns immediately after submit; the editor will
+      // poll the job in the background and update the clip on success.
+      router.push(
+        `/projects/${targetProjectId}/edit/${result.clip.id}?job=${result.job.id}`,
+      );
+    } catch (err) {
+      const msg = (err as Error)?.message ?? "Generation failed";
+      const status = (err as { status?: number })?.status;
+      if (status === 402) {
+        setRenderError(
+          msg || "You don't have enough credits for this render. Top up to continue."
+        );
+        return;
+      }
+      setRenderError(
+        getFriendlyErrorMessage(err, msg || "Generation failed. Please retry."),
+      );
     }
-    charge(credits, `HD render — ${template?.title ?? gen.prompt?.slice(0, 32) ?? "Custom"}`);
-    const result = await render.mutateAsync({
-      prompt: gen.prompt,
-      templateId: gen.templateId,
-      styleId: gen.styleId,
-      previewUrl,
-      thumbnail,
-      credits,
-    });
-
-    const platform: TemplatePlatform = template?.platform ?? gen.platform ?? "instagram-reels";
-    const clip: Clip = {
-      id: `c-${Date.now()}`,
-      projectId: projectId ?? `p-${Date.now()}`,
-      order: 0,
-      title: template?.title ?? gen.prompt?.slice(0, 48) ?? "New clip",
-      prompt: gen.prompt ?? template?.description ?? "",
-      thumbnail: result.thumbnail,
-      videoUrl: result.videoUrl,
-      durationSec: result.durationSec,
-      status: "ready",
-      subtitles: { enabled: true, language: "en", style: "bold", position: "bottom" },
-      music: { enabled: false, volume: 60 },
-      overlays: [],
-      trim: { startSec: 0, endSec: result.durationSec, speed: 1 },
-    };
-
-    let targetProjectId = projectId;
-    if (!targetProjectId) {
-      const newProject: Project = {
-        id: clip.projectId,
-        title: template?.title ?? gen.prompt?.slice(0, 48) ?? "New project",
-        cover: result.thumbnail,
-        platform,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        clips: [{ ...clip, order: 0 }],
-      };
-      addProject(newProject);
-      targetProjectId = newProject.id;
-    } else {
-      appendClip(targetProjectId, clip);
-    }
-
-    reset();
-    router.push(`/projects/${targetProjectId}/edit/${clip.id}`);
   }
 
   const isGenerating = preview.isPending;
-  const isRendering = render.isPending;
+  const isRendering = generate.isPending || createProject.isPending;
 
   return (
     <div>
@@ -136,18 +158,24 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
                 <GenerationProgress />
               </motion.div>
             ) : (
-              <motion.video
+              <motion.div
                 key={previewUrl}
                 initial={{ opacity: 0, scale: 1.02 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                src={previewUrl}
-                autoPlay
-                loop
-                muted
-                playsInline
                 className="absolute inset-0 h-full w-full object-cover"
-              />
+              >
+                <VideoPlayer
+                  src={previewUrl}
+                  poster={thumbnail}
+                  autoPlay
+                  loop
+                  defaultMuted
+                  showControls={false}
+                  showAudioToggle={false}
+                  className="absolute inset-0"
+                />
+              </motion.div>
             )}
           </AnimatePresence>
 
@@ -198,6 +226,22 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
             </div>
           </div>
 
+          {renderError && (
+            <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+              <p>{renderError}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2 h-7 px-2 text-destructive hover:bg-destructive/10"
+                onClick={() => void acceptAndRender()}
+                disabled={isGenerating || isRendering || !previewUrl}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Retry render
+              </Button>
+            </div>
+          )}
+
           <div className="flex flex-col gap-2">
             <Button
               size="lg"
@@ -207,7 +251,7 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
               {isRendering ? (
                 <>
                   <Sparkles className="h-4 w-4 animate-pulse" />
-                  Rendering HD…
+                  Submitting…
                 </>
               ) : (
                 <>

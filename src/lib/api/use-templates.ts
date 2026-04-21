@@ -1,15 +1,32 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { TEMPLATES } from "@/lib/data/templates";
-import { sleep } from "@/lib/utils";
+import { api, asList } from "./client";
+import { mapTemplate } from "./adapters";
+import type { TemplateDTO } from "./types";
 import type { Template } from "@/types/template";
 
-async function fetchTemplates(): Promise<Template[]> {
-  await sleep(150);
-  return TEMPLATES;
-}
+export const templatesKey = ["templates"] as const;
+export const templateKey = (id: string) => ["templates", id] as const;
 
 export function useTemplates() {
-  return useQuery({ queryKey: ["templates"], queryFn: fetchTemplates });
+  return useQuery<Template[]>({
+    queryKey: templatesKey,
+    queryFn: async () => {
+      const raw = await api<TemplateDTO[] | { items?: TemplateDTO[] }>("/templates");
+      return asList<TemplateDTO>(raw).map(mapTemplate);
+    },
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useTemplate(id: string | undefined) {
+  return useQuery<Template>({
+    queryKey: id ? templateKey(id) : ["templates", "none"],
+    enabled: !!id,
+    queryFn: async () => {
+      const dto = await api<TemplateDTO>(`/templates/${id}`);
+      return mapTemplate(dto);
+    },
+  });
 }

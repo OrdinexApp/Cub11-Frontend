@@ -6,8 +6,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
+  const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+  const m = Math.floor(safe / 60);
+  const s = Math.floor(safe % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 

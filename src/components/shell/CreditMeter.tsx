@@ -1,25 +1,16 @@
 "use client";
 
-import { Coins, ShieldCheck, ArrowUpRight } from "lucide-react";
+import { Coins, ShieldCheck, ArrowUpRight, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCreditsStore } from "@/lib/stores/credits-store";
-import { timeAgo, cn } from "@/lib/utils";
-import type { CreditEntry } from "@/types/project";
-
-const REASON_LABEL: Record<CreditEntry["reason"], string> = {
-  preview: "Preview",
-  render: "HD render",
-  "refund-failed": "Auto-refund",
-  topup: "Top-up",
-  welcome: "Welcome bonus",
-};
+import { useMe } from "@/lib/api/use-auth";
 
 export function CreditMeter({ compact = false }: { compact?: boolean }) {
-  const { balance, history } = useCreditsStore();
+  const me = useMe();
+  const balance = me.data?.credits_remaining ?? 0;
+  const loading = me.isLoading || me.isFetching;
 
   return (
     <Popover>
@@ -52,10 +43,7 @@ export function CreditMeter({ compact = false }: { compact?: boolean }) {
         )}
       </PopoverTrigger>
 
-      <PopoverContent
-        align={compact ? "end" : "start"}
-        className="w-80 p-0"
-      >
+      <PopoverContent align={compact ? "end" : "start"} className="w-80 p-0">
         <div className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -74,36 +62,18 @@ export function CreditMeter({ compact = false }: { compact?: boolean }) {
           </p>
         </div>
         <Separator />
-        <div className="p-2">
-          <p className="px-2 pt-1 pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Recent activity
-          </p>
-          <ScrollArea className="h-64">
-            <ul className="flex flex-col">
-              {history.slice(0, 30).map((e) => (
-                <li
-                  key={e.id}
-                  className="flex items-start justify-between gap-3 rounded-lg px-2 py-2 hover:bg-accent/40"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm leading-tight truncate">{e.note}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {REASON_LABEL[e.reason]} · {timeAgo(e.at)}
-                    </p>
-                  </div>
-                  <span
-                    className={cn(
-                      "font-mono text-sm shrink-0",
-                      e.amount >= 0 ? "text-success" : "text-foreground",
-                    )}
-                  >
-                    {e.amount >= 0 ? "+" : ""}
-                    {e.amount}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </ScrollArea>
+        <div className="p-4 flex items-center justify-between">
+          <div className="text-xs text-muted-foreground">
+            Live balance from your account
+          </div>
+          <button
+            onClick={() => me.refetch()}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            aria-label="Refresh balance"
+          >
+            <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
         </div>
       </PopoverContent>
     </Popover>

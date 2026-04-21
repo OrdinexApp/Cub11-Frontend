@@ -22,7 +22,7 @@ export function ProjectCard({ project }: { project: Project }) {
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
           <Image
             src={project.cover}
-            alt={project.title}
+            alt={project.title || "Project cover"}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
             className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"

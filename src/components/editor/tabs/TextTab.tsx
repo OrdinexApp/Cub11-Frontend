@@ -21,6 +21,8 @@ export function TextTab() {
 
   if (!clip) return null;
 
+  const overlayLimit = 8;
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -30,8 +32,9 @@ export function TextTab() {
             placeholder="50% off only this weekend"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
+            maxLength={90}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && draft.trim()) {
+              if (e.key === "Enter" && draft.trim() && clip.overlays.length < overlayLimit) {
                 add(draft.trim());
                 setDraft("");
               }
@@ -39,15 +42,19 @@ export function TextTab() {
           />
           <Button
             onClick={() => {
-              if (!draft.trim()) return;
+              if (!draft.trim() || clip.overlays.length >= overlayLimit) return;
               add(draft.trim());
               setDraft("");
             }}
+            disabled={!draft.trim() || clip.overlays.length >= overlayLimit}
           >
             <Plus className="h-4 w-4" />
             Add
           </Button>
         </div>
+        <p className="text-[11px] text-muted-foreground">
+          {clip.overlays.length}/{overlayLimit} overlays
+        </p>
       </div>
 
       {clip.overlays.length === 0 ? (

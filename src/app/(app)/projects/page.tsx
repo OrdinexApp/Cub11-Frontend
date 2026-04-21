@@ -2,20 +2,26 @@
 
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import { useProjectsStore } from "@/lib/stores/projects-store";
+import { useProjects } from "@/lib/api/use-projects";
+import { useMe } from "@/lib/api/use-auth";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { EmptyState } from "@/components/projects/EmptyState";
 import { Button } from "@/components/ui/button";
+import { getFriendlyErrorMessage } from "@/lib/ui/error-messages";
 
 export default function ProjectsPage() {
-  const projects = useProjectsStore((s) => s.projects);
+  const me = useMe();
+  const { data: projects, isLoading, isError, error, refetch } = useProjects();
+
+  const greetingName =
+    me.data?.full_name?.split(" ")[0] ?? me.data?.email?.split("@")[0] ?? "there";
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 md:px-8 py-8 md:py-12">
       <header className="mb-8 md:mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
-            Hi there 👋
+            Hi {greetingName} 👋
           </h1>
           <p className="mt-2 max-w-xl text-muted-foreground">
             Pick up where you left off, or spin up something new in three taps.
@@ -29,7 +35,26 @@ export default function ProjectsPage() {
         </Button>
       </header>
 
-      {projects.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="aspect-[16/10] animate-pulse rounded-2xl bg-muted/40"
+            />
+          ))}
+        </div>
+      ) : isError ? (
+        <EmptyState
+          title="Couldn't load projects"
+          description={getFriendlyErrorMessage(
+            error,
+            "We couldn't load your projects right now.",
+          )}
+          ctaLabel="Retry"
+          onCta={() => refetch()}
+        />
+      ) : !projects || projects.length === 0 ? (
         <EmptyState />
       ) : (
         <section className="space-y-4">

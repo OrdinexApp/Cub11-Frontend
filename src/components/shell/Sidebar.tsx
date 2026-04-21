@@ -8,11 +8,14 @@ import {
   PlaySquare,
   UserCircle2,
   Sparkles,
+  LogOut,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CreditMeter } from "./CreditMeter";
+import { useLogout } from "@/lib/api/use-auth";
+import { useAuthStore } from "@/lib/stores/auth-store";
 
 export const NAV_ITEMS = [
   { href: "/projects", label: "Projects", icon: FolderKanban },
@@ -23,6 +26,8 @@ export const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const logout = useLogout();
+  const user = useAuthStore((s) => s.user);
 
   return (
     <aside className="hidden md:flex h-dvh sticky top-0 w-64 shrink-0 flex-col gap-2 border-r border-border/50 bg-card/40 px-4 py-6">
@@ -79,6 +84,27 @@ export function Sidebar() {
 
       <div className="mt-auto flex flex-col gap-3">
         <CreditMeter />
+
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/60 bg-card/50 px-3 py-2">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium leading-tight">
+              {user?.full_name || user?.email || "Signed in"}
+            </p>
+            {user?.full_name && (
+              <p className="truncate text-[10px] text-muted-foreground">
+                {user.email}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={logout}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+            aria-label="Sign out"
+            title="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -1,22 +1,13 @@
 "use client";
 
-import { Coins, ShieldCheck, Plus } from "lucide-react";
+import { Coins, ShieldCheck, Plus, LogOut, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useCreditsStore } from "@/lib/stores/credits-store";
-import { timeAgo, cn } from "@/lib/utils";
-import type { CreditEntry } from "@/types/project";
-
-const REASON_LABEL: Record<CreditEntry["reason"], string> = {
-  preview: "Preview",
-  render: "HD render",
-  "refund-failed": "Auto-refund",
-  topup: "Top-up",
-  welcome: "Welcome bonus",
-};
+import { useLogout, useMe } from "@/lib/api/use-auth";
+import { cn } from "@/lib/utils";
 
 const PACKS = [
   { credits: 200, price: "$5", per: "$0.025/credit", popular: false },
@@ -24,23 +15,37 @@ const PACKS = [
   { credits: 1500, price: "$25", per: "$0.017/credit", popular: false },
 ];
 
+function initialsOf(name?: string | null, email?: string) {
+  const src = name || email || "U";
+  const parts = src.split(/\s|@/).filter(Boolean);
+  return (parts[0]?.[0] ?? "U").toUpperCase() + (parts[1]?.[0] ?? "").toUpperCase();
+}
+
 export default function AccountPage() {
-  const { balance, history, topUp } = useCreditsStore();
+  const me = useMe();
+  const logout = useLogout();
+  const balance = me.data?.credits_remaining ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 md:px-8 py-8 md:py-12">
-      <header className="mb-8 md:mb-10 flex items-center gap-4">
-        <Avatar className="h-14 w-14">
-          <AvatarFallback>C11</AvatarFallback>
-        </Avatar>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-            Your account
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            creator@cube11.app · Free plan
-          </p>
+      <header className="mb-8 md:mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-14 w-14">
+            <AvatarFallback>{initialsOf(me.data?.full_name, me.data?.email)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+              {me.data?.full_name || "Your account"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {me.data?.email ?? "—"} · Free plan
+            </p>
+          </div>
         </div>
+        <Button variant="outline" size="lg" onClick={logout}>
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </Button>
       </header>
 
       <Card className="overflow-hidden">
@@ -62,11 +67,10 @@ export default function AccountPage() {
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               {PACKS.map((p) => (
-                <button
+                <div
                   key={p.credits}
-                  onClick={() => topUp(p.credits, `Top-up — ${p.credits} credits`)}
                   className={cn(
-                    "relative rounded-2xl border bg-card p-4 text-left transition hover:border-primary/40",
+                    "relative rounded-2xl border bg-card p-4 text-left transition",
                     p.popular ? "border-primary" : "border-border/60",
                   )}
                 >
@@ -76,46 +80,33 @@ export default function AccountPage() {
                   <p className="font-mono text-xl font-semibold">{p.credits} cr</p>
                   <p className="mt-1 text-sm">{p.price}</p>
                   <p className="text-[11px] text-muted-foreground">{p.per}</p>
-                  <Button size="sm" variant="soft" className="mt-3 w-full">
+                  <Button size="sm" variant="soft" className="mt-3 w-full" disabled>
                     <Plus className="h-3.5 w-3.5" />
                     Top up
                   </Button>
-                </button>
+                </div>
               ))}
             </div>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              Payments coming soon — top-up via the API once Stripe checkout is wired.
+            </p>
           </CardContent>
         </div>
       </Card>
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Credit activity</CardTitle>
+          <CardTitle>Recent activity</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <ul className="divide-y divide-border/60">
-            {history.map((e) => (
-              <li
-                key={e.id}
-                className="flex items-start justify-between gap-4 px-6 py-3.5"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium leading-tight">{e.note}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {REASON_LABEL[e.reason]} · {timeAgo(e.at)}
-                  </p>
-                </div>
-                <span
-                  className={cn(
-                    "shrink-0 font-mono text-sm",
-                    e.amount >= 0 ? "text-success" : "text-foreground",
-                  )}
-                >
-                  {e.amount >= 0 ? "+" : ""}
-                  {e.amount}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <CardContent>
+          <div className="grid place-items-center rounded-2xl border border-dashed border-border/60 bg-card/30 px-6 py-10 text-center">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <p className="mt-3 text-sm font-medium">Your credit history will appear here</p>
+            <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+              Once the backend ledger endpoint is live, every charge, refund, and top-up
+              will show up in this list — no surprises.
+            </p>
+          </div>
         </CardContent>
       </Card>
 

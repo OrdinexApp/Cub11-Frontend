@@ -8,8 +8,8 @@ export default function TemplatesPage() {
       <header className="mb-8 md:mb-10">
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Templates</h1>
         <p className="mt-2 max-w-xl text-muted-foreground">
-          One tap to start. We pre-test every template so your first generation lands on
-          the first try.
+          One tap to start. Curated with SEA + India creator contexts so preview visuals
+          feel local, familiar, and conversion-ready.
         </p>
       </header>
       <TemplateGrid />

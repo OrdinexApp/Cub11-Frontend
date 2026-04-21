@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import * as React from "react";
 import { motion } from "framer-motion";
 import { Play, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PLATFORM_LABELS, PLATFORM_EMOJI } from "@/lib/data/templates";
+import { hardTemplateFallback } from "@/lib/data/template-previews";
 import type { Template } from "@/types/template";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +19,18 @@ const ASPECT_CLASS: Record<Template["aspect"], string> = {
 };
 
 export function TemplateCard({ template }: { template: Template }) {
+  const finalFallback = React.useMemo(
+    () => hardTemplateFallback(template.id),
+    [template.id],
+  );
+  const [imageSrc, setImageSrc] = React.useState(
+    template.previewImageUrl ?? template.thumbnail ?? finalFallback,
+  );
+
+  React.useEffect(() => {
+    setImageSrc(template.previewImageUrl ?? template.thumbnail ?? finalFallback);
+  }, [template.previewImageUrl, template.thumbnail, finalFallback]);
+
   return (
     <motion.div
       whileHover={{ y: -4 }}
@@ -26,13 +40,22 @@ export function TemplateCard({ template }: { template: Template }) {
       <Link href={`/new?template=${template.id}`} className="block">
         <div className={cn("relative w-full overflow-hidden", ASPECT_CLASS[template.aspect])}>
           <Image
-            src={template.thumbnail}
-            alt={template.title}
+            src={imageSrc}
+            alt={template.title || "Template"}
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => {
+              if (imageSrc !== (template.thumbnail ?? "")) {
+                setImageSrc(template.thumbnail || finalFallback);
+                return;
+              }
+              if (imageSrc !== finalFallback) {
+                setImageSrc(finalFallback);
+              }
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
 
           {template.trending && (
             <Badge variant="warning" className="absolute top-3 left-3 backdrop-blur">

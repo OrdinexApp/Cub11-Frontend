@@ -8,6 +8,8 @@ import { useTemplates } from "@/lib/api/use-templates";
 import { PLATFORM_LABELS, PLATFORM_EMOJI } from "@/lib/data/templates";
 import type { TemplatePlatform } from "@/types/template";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/projects/EmptyState";
+import { getFriendlyErrorMessage } from "@/lib/ui/error-messages";
 
 const PLATFORMS: ("all" | TemplatePlatform)[] = [
   "all",
@@ -20,7 +22,7 @@ const PLATFORMS: ("all" | TemplatePlatform)[] = [
 ];
 
 export function TemplateGrid() {
-  const { data, isLoading } = useTemplates();
+  const { data, isLoading, isError, error, refetch } = useTemplates();
   const [filter, setFilter] = React.useState<(typeof PLATFORMS)[number]>("all");
 
   const filtered = React.useMemo(
@@ -30,7 +32,7 @@ export function TemplateGrid() {
 
   return (
     <div className="space-y-10">
-      {data && <RegionalRow templates={data} />}
+      {!!data?.length && <RegionalRow templates={data} />}
 
       <section className="space-y-4">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -67,6 +69,32 @@ export function TemplateGrid() {
               />
             ))}
           </div>
+        ) : isError ? (
+          <EmptyState
+            title="Couldn't load templates"
+            description={getFriendlyErrorMessage(
+              error,
+              "Templates are temporarily unavailable.",
+            )}
+            ctaLabel="Retry"
+            onCta={() => {
+              void refetch();
+            }}
+          />
+        ) : !data || data.length === 0 ? (
+          <EmptyState
+            title="No templates available"
+            description="We're preparing fresh ideas for your region. Check back soon."
+            ctaLabel="Create from prompt"
+            ctaHref="/new"
+          />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            title="No templates in this filter"
+            description="Try a different platform to find more options."
+            ctaLabel="Show all templates"
+            onCta={() => setFilter("all")}
+          />
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {filtered.map((t) => (

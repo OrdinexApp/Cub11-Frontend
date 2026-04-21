@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Music, Pause, Play, Volume2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -17,10 +18,10 @@ const MOODS = [
 ];
 
 const TRACKS = [
-  { id: "t1", name: "Festive Strings", mood: "festive", duration: "0:30" },
-  { id: "t2", name: "Lo-fi Sunday", mood: "chill", duration: "0:45" },
-  { id: "t3", name: "Bombay Mornings", mood: "bollywood", duration: "0:38" },
-  { id: "t4", name: "Trap Drop 808", mood: "trap", duration: "0:24" },
+  { id: "t1", url: "library://festive-strings", name: "Festive Strings", mood: "festive", duration: "0:30" },
+  { id: "t2", url: "library://lofi-sunday", name: "Lo-fi Sunday", mood: "chill", duration: "0:45" },
+  { id: "t3", url: "library://bombay-mornings", name: "Bombay Mornings", mood: "bollywood", duration: "0:38" },
+  { id: "t4", url: "library://trap-drop-808", name: "Trap Drop 808", mood: "trap", duration: "0:24" },
 ];
 
 export function MusicTab() {
@@ -29,6 +30,84 @@ export function MusicTab() {
   if (!clip) return null;
 
   const m = clip.music;
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [playingTrackId, setPlayingTrackId] = React.useState<string | null>(null);
+
+  const allTracks = React.useMemo(() => {
+    const backendTrack =
+      m.trackUrl && /^https?:\/\//i.test(m.trackUrl)
+        ? [
+            {
+              id: "backend-track",
+              url: m.trackUrl,
+              name: m.trackName || "Current track",
+              mood: m.mood || "custom",
+              duration: "Live",
+            },
+          ]
+        : [];
+    return [...backendTrack, ...TRACKS];
+  }, [m.trackUrl, m.trackName, m.mood]);
+
+  function stopAudio() {
+    if (!audioRef.current) return;
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    setPlayingTrackId(null);
+  }
+
+  async function toggleTrackPreview(track: (typeof allTracks)[number]) {
+    const url = track.url && /^https?:\/\//i.test(track.url) ? track.url : null;
+    patch({
+      trackId: track.id,
+      trackUrl: track.url,
+      trackName: track.name,
+      mood: track.mood,
+      enabled: true,
+    });
+
+    if (!url) return;
+
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.preload = "metadata";
+      audioRef.current.onended = () => setPlayingTrackId(null);
+    }
+
+    const player = audioRef.current;
+    if (playingTrackId === track.id) {
+      stopAudio();
+      return;
+    }
+
+    try {
+      player.pause();
+      player.src = url;
+      player.volume = Math.max(0, Math.min(1, m.volume / 100));
+      await player.play();
+      setPlayingTrackId(track.id);
+    } catch {
+      setPlayingTrackId(null);
+    }
+  }
+
+  React.useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.volume = Math.max(0, Math.min(1, m.volume / 100));
+  }, [m.volume]);
+
+  React.useEffect(() => {
+    if (m.enabled) return;
+    stopAudio();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [m.enabled]);
+
+  React.useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -69,8 +148,12 @@ export function MusicTab() {
       <div className="space-y-2">
         <Label>Tracks</Label>
         <ul className="flex flex-col gap-2">
-          {TRACKS.map((t) => {
-            const active = m.trackId === t.id;
+          {allTracks.map((t) => {
+            const active =
+              m.trackId === t.id ||
+              m.trackUrl === t.url ||
+              m.trackName === t.name ||
+              playingTrackId === t.id;
             return (
               <li
                 key={t.id}
@@ -83,9 +166,7 @@ export function MusicTab() {
               >
                 <button
                   className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary"
-                  onClick={() =>
-                    patch({ trackId: t.id, trackName: t.name, mood: t.mood, enabled: true })
-                  }
+                  onClick={() => void toggleTrackPreview(t)}
                   aria-label="Play"
                 >
                   {active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}

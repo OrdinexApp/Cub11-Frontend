@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   DndContext,
   closestCenter,
@@ -24,6 +25,12 @@ interface Props {
 }
 
 export function ClipList({ clips, onReorder, onDelete }: Props) {
+  const [ordered, setOrdered] = React.useState(clips);
+
+  React.useEffect(() => {
+    setOrdered(clips);
+  }, [clips]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
@@ -32,10 +39,14 @@ export function ClipList({ clips, onReorder, onDelete }: Props) {
   function handleDragEnd(e: DragEndEvent) {
     const { active, over } = e;
     if (!over || active.id === over.id) return;
-    const oldIndex = clips.findIndex((c) => c.id === active.id);
-    const newIndex = clips.findIndex((c) => c.id === over.id);
+    const oldIndex = ordered.findIndex((c) => c.id === active.id);
+    const newIndex = ordered.findIndex((c) => c.id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
-    const reordered = arrayMove(clips, oldIndex, newIndex);
+    const reordered = arrayMove(ordered, oldIndex, newIndex).map((c, idx) => ({
+      ...c,
+      order: idx,
+    }));
+    setOrdered(reordered);
     onReorder(reordered.map((c) => c.id));
   }
 
@@ -46,11 +57,11 @@ export function ClipList({ clips, onReorder, onDelete }: Props) {
       onDragEnd={handleDragEnd}
     >
       <SortableContext
-        items={clips.map((c) => c.id)}
+        items={ordered.map((c) => c.id)}
         strategy={verticalListSortingStrategy}
       >
         <ul className="flex flex-col gap-3">
-          {clips.map((clip) => (
+          {ordered.map((clip) => (
             <li key={clip.id}>
               <ClipCard clip={clip} onDelete={onDelete} />
             </li>
