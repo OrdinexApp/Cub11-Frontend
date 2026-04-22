@@ -423,4 +423,686 @@
   .animate-drift-right {
     animation: drift-right 55s linear infinite;
   }
+
+  /* Marketing light landing — timeline scrubber */
+  @keyframes mk-scrub {
+    from {
+      left: 25%;
+    }
+    to {
+      left: 70%;
+    }
+  }
+  .mk-scrubber {
+    animation: mk-scrub 4s ease-in-out infinite alternate;
+  }
+
+  /* Hero vertical strip (infinite scroll) */
+  @keyframes mk-hero-scroll {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-50%);
+    }
+  }
+  .mk-hero-strip {
+    animation: mk-hero-scroll 22s linear infinite;
+  }
+  .mk-hero-strip:hover {
+    animation-play-state: paused;
+  }
+
+  /* Marketing light — floating background blobs */
+  @keyframes mk-blob-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes mk-blob-1 {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(60px, 40px) scale(1.07);
+    }
+    66% {
+      transform: translate(-30px, 70px) scale(0.96);
+    }
+    100% {
+      transform: translate(40px, -50px) scale(1.04);
+    }
+  }
+  @keyframes mk-blob-2 {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    40% {
+      transform: translate(-80px, 50px) scale(1.05);
+    }
+    70% {
+      transform: translate(-40px, -30px) scale(0.97);
+    }
+    100% {
+      transform: translate(-70px, 60px) scale(1.03);
+    }
+  }
+  @keyframes mk-blob-3 {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    30% {
+      transform: translate(50px, -60px) scale(1.06);
+    }
+    60% {
+      transform: translate(-60px, 40px) scale(0.95);
+    }
+    100% {
+      transform: translate(30px, 50px) scale(1.04);
+    }
+  }
+  @keyframes mk-blob-4 {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    35% {
+      transform: translate(-50px, -40px) scale(1.08);
+    }
+    70% {
+      transform: translate(40px, -60px) scale(0.96);
+    }
+    100% {
+      transform: translate(-30px, 30px) scale(1.03);
+    }
+  }
+  @keyframes mk-blob-5 {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    40% {
+      transform: translate(60px, -40px) scale(1.05);
+    }
+    75% {
+      transform: translate(-30px, 50px) scale(0.97);
+    }
+    100% {
+      transform: translate(50px, 30px) scale(1.06);
+    }
+  }
+
+  .mk-blob-1 {
+    background: radial-gradient(
+      circle,
+      rgba(196, 167, 255, 0.75) 0%,
+      rgba(196, 167, 255, 0) 70%
+    );
+    animation:
+      mk-blob-1 16s ease-in-out infinite alternate,
+      mk-blob-fade 2s ease forwards;
+  }
+  .mk-blob-2 {
+    background: radial-gradient(
+      circle,
+      rgba(255, 182, 230, 0.65) 0%,
+      rgba(255, 182, 230, 0) 70%
+    );
+    animation:
+      mk-blob-2 20s ease-in-out infinite alternate,
+      mk-blob-fade 2.5s ease forwards;
+  }
+  .mk-blob-3 {
+    background: radial-gradient(
+      circle,
+      rgba(221, 214, 254, 0.55) 0%,
+      rgba(221, 214, 254, 0) 70%
+    );
+    animation:
+      mk-blob-3 24s ease-in-out infinite alternate,
+      mk-blob-fade 3s ease forwards;
+  }
+  .mk-blob-4 {
+    background: radial-gradient(
+      circle,
+      rgba(254, 215, 170, 0.6) 0%,
+      rgba(254, 215, 170, 0) 70%
+    );
+    animation:
+      mk-blob-4 18s ease-in-out infinite alternate,
+      mk-blob-fade 3.5s ease forwards;
+  }
+  .mk-blob-5 {
+    background: radial-gradient(
+      circle,
+      rgba(186, 230, 253, 0.55) 0%,
+      rgba(186, 230, 253, 0) 70%
+    );
+    animation:
+      mk-blob-5 22s ease-in-out infinite alternate,
+      mk-blob-fade 4s ease forwards;
+  }
+
+  /* Marketing light — soft grid overlay */
+  .mk-grid {
+    background-image:
+      linear-gradient(
+        to right,
+        rgba(124, 58, 237, 0.06) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(124, 58, 237, 0.06) 1px,
+        transparent 1px
+      );
+    background-size: 64px 64px;
+    background-position: center;
+    mask-image: radial-gradient(
+      ellipse 90% 65% at 50% 35%,
+      black 30%,
+      transparent 80%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse 90% 65% at 50% 35%,
+      black 30%,
+      transparent 80%
+    );
+  }
+
+  /* Marketing light — slow horizontal wave drift */
+  @keyframes mk-wave-drift {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-25%, 0, 0);
+    }
+  }
+  .mk-wave-drift-slow {
+    animation: mk-wave-drift 28s ease-in-out infinite alternate;
+  }
+  .mk-wave-drift-fast {
+    animation: mk-wave-drift 18s ease-in-out infinite alternate-reverse;
+  }
+
+  /* Marketing light — typing caret */
+  @keyframes mk-type-caret {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+  .mk-caret {
+    animation: mk-type-caret 1s steps(1) infinite;
+  }
+
+  /* Marketing light — progress sweep for timeline */
+  @keyframes mk-sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  .mk-sweep {
+    animation: mk-sweep 2.6s ease-in-out infinite;
+  }
+
+  /* Marketing light — gentle float for stat chips */
+  @keyframes mk-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  .mk-float {
+    animation: mk-float 6s ease-in-out infinite;
+  }
+
+  /* Marketing light — waveform bars (audio) */
+  @keyframes mk-bars {
+    0%,
+    100% {
+      transform: scaleY(0.3);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+  .mk-bar {
+    transform-origin: bottom;
+    animation: mk-bars 1.4s ease-in-out infinite;
+  }
+
+  /* =============================================================
+     AURORA LANDING (v3) — animated gradient + cursor + ripple
+     ============================================================= */
+
+  /* Route-level override: when the landing page mounts, unlock the
+     surface so the fixed aurora gradient can show through.         */
+  html.mk-landing-root,
+  html.mk-landing-root body {
+    background: transparent !important;
+    color: #111827;
+  }
+  html.mk-landing-root {
+    /* Fallback barely-tinted white — matches #aurora-bg from the HTML reference */
+    background-color: #faf8ff !important;
+  }
+
+  /* Aurora v4 — creative multi-angle waves (21st.dev / flowstep technique).
+     Three layered gradient surfaces:
+       • .mk-aurora-inner       — primary horizontal wave (drift)
+       • .mk-aurora-inner::before — diagonal counter-wave (cross)
+       • .mk-aurora-inner::after  — linear L→R sweep (sweep)
+     White repeating banding + colored repeating gradient are composited
+     with filter: blur(12px) invert(1) and overlay/difference blend modes. */
+  .mk-aurora-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background: #faf8ff;
+    pointer-events: none;
+  }
+
+  .mk-aurora-inner {
+    /* White banding layer */
+    --mk-wg: repeating-linear-gradient(
+      100deg,
+      #fff 0%,
+      #fff 7%,
+      transparent 10%,
+      transparent 12%,
+      #fff 16%
+    );
+    /* Primary horizontal aurora (flowstep original direction) */
+    --mk-ah: repeating-linear-gradient(
+      100deg,
+      #c4b5fd 10%,
+      #a78bfa 15%,
+      #f0abfc 20%,
+      #ddd6fe 25%,
+      #818cf8 30%
+    );
+    /* Secondary diagonal aurora — warm tones for cross-wave interference */
+    --mk-ad: repeating-linear-gradient(
+      55deg,
+      #fbcfe8 5%,
+      #f0abfc 12%,
+      #e0e7ff 18%,
+      #c4b5fd 24%,
+      #fbcfe8 30%
+    );
+
+    position: absolute;
+    inset: -25px;
+    opacity: 0.55;
+    will-change: transform;
+    pointer-events: none;
+
+    background-image: var(--mk-wg), var(--mk-ah);
+    background-size: 300%, 200%;
+    background-position:
+      50% 50%,
+      50% 50%;
+    filter: blur(12px) invert(1);
+
+    -webkit-mask-image: radial-gradient(
+      ellipse 120% 100% at 55% 45%,
+      black 20%,
+      transparent 80%
+    );
+    mask-image: radial-gradient(
+      ellipse 120% 100% at 55% 45%,
+      black 20%,
+      transparent 80%
+    );
+
+    animation: mk-aurora-drift 14s ease-in-out infinite alternate;
+  }
+
+  .mk-aurora-inner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--mk-wg), var(--mk-ad);
+    background-size: 250%, 160%;
+    background-position:
+      30% 70%,
+      70% 30%;
+    mix-blend-mode: overlay;
+    opacity: 0.7;
+    animation: mk-aurora-cross 18s ease-in-out infinite alternate;
+  }
+
+  .mk-aurora-inner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--mk-wg), var(--mk-ah);
+    background-size: 200%, 100%;
+    background-attachment: fixed;
+    mix-blend-mode: difference;
+    animation: mk-aurora-sweep 35s linear infinite;
+  }
+
+  @keyframes mk-aurora-sweep {
+    from {
+      background-position:
+        50% 50%,
+        50% 50%;
+    }
+    to {
+      background-position:
+        350% 50%,
+        350% 50%;
+    }
+  }
+
+  @keyframes mk-aurora-drift {
+    0% {
+      transform: rotate(-2deg) scale(1);
+    }
+    25% {
+      transform: rotate(1deg) scale(1.03);
+    }
+    55% {
+      transform: rotate(-3deg) scale(1.01);
+    }
+    80% {
+      transform: rotate(2deg) scale(1.04);
+    }
+    100% {
+      transform: rotate(-1deg) scale(1.02);
+    }
+  }
+
+  @keyframes mk-aurora-cross {
+    0% {
+      transform: rotate(4deg) translateX(-2%) scale(1.02);
+    }
+    35% {
+      transform: rotate(-3deg) translateX(3%) scale(1);
+    }
+    70% {
+      transform: rotate(5deg) translateX(-1%) scale(1.03);
+    }
+    100% {
+      transform: rotate(-2deg) translateX(2%) scale(1.01);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mk-aurora-inner,
+    .mk-aurora-inner::before,
+    .mk-aurora-inner::after {
+      animation: none !important;
+    }
+  }
+
+  /* Custom cursor (desktop only, respects reduced motion) */
+  @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .mk-cursor-layer,
+    .mk-cursor-layer a,
+    .mk-cursor-layer button,
+    .mk-cursor-layer summary,
+    .mk-cursor-layer [role="button"] {
+      cursor: none;
+    }
+  }
+
+  .mk-cursor-dot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    background: #7c3aed;
+    border-radius: 9999px;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate3d(-100px, -100px, 0);
+    transition:
+      width 180ms ease,
+      height 180ms ease,
+      background 180ms ease,
+      border 180ms ease;
+    mix-blend-mode: multiply;
+    will-change: transform;
+  }
+  .mk-cursor-dot--hover {
+    width: 36px;
+    height: 36px;
+    background: rgba(124, 58, 237, 0.12);
+    border: 1.5px solid #7c3aed;
+  }
+  .mk-cursor-dot--hidden {
+    opacity: 0;
+  }
+
+  .mk-you-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    transform: translate3d(-100px, -100px, 0);
+    will-change: transform;
+  }
+  .mk-you-cursor-label {
+    background: #10b981;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+
+  /* Click ripple ring */
+  @keyframes mk-ripple-expand {
+    0% {
+      opacity: 1;
+      transform: translate3d(-50%, -50%, 0) scale(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(-50%, -50%, 0) scale(1);
+    }
+  }
+  .mk-ripple {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 9999px;
+    pointer-events: none;
+    z-index: 9998;
+    background: conic-gradient(
+      from 0deg,
+      #7c3aed,
+      #ec4899,
+      #f59e0b,
+      #7c3aed
+    );
+    padding: 2px;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: mk-ripple-expand 650ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Canvas collab cursor animated paths */
+  @keyframes mk-path-alex {
+    0% {
+      top: 20%;
+      left: 15%;
+    }
+    16% {
+      top: 35%;
+      left: 45%;
+    }
+    33% {
+      top: 55%;
+      left: 25%;
+    }
+    50% {
+      top: 30%;
+      left: 65%;
+    }
+    66% {
+      top: 65%;
+      left: 55%;
+    }
+    83% {
+      top: 45%;
+      left: 30%;
+    }
+    100% {
+      top: 20%;
+      left: 15%;
+    }
+  }
+  @keyframes mk-path-riya {
+    0% {
+      top: 15%;
+      left: 60%;
+    }
+    20% {
+      top: 50%;
+      left: 75%;
+    }
+    40% {
+      top: 70%;
+      left: 40%;
+    }
+    60% {
+      top: 25%;
+      left: 55%;
+    }
+    80% {
+      top: 60%;
+      left: 20%;
+    }
+    100% {
+      top: 15%;
+      left: 60%;
+    }
+  }
+  @keyframes mk-path-dimas {
+    0% {
+      top: 55%;
+      left: 50%;
+    }
+    25% {
+      top: 25%;
+      left: 35%;
+    }
+    50% {
+      top: 70%;
+      left: 70%;
+    }
+    75% {
+      top: 40%;
+      left: 80%;
+    }
+    100% {
+      top: 55%;
+      left: 50%;
+    }
+  }
+  .mk-path-alex {
+    animation: mk-path-alex 14s linear infinite;
+  }
+  .mk-path-riya {
+    animation: mk-path-riya 14s linear infinite;
+  }
+  .mk-path-dimas {
+    animation: mk-path-dimas 14s linear infinite;
+  }
+
+  /* Canvas dot grid pattern */
+  .mk-dot-grid {
+    background-image: radial-gradient(
+      circle,
+      rgba(17, 24, 39, 0.08) 1px,
+      transparent 1px
+    );
+    background-size: 28px 28px;
+  }
+
+  /* Hero carousel — vertical infinite scroll */
+  @keyframes mk-carousel-flow {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-50%);
+    }
+  }
+  .mk-carousel-track {
+    animation: mk-carousel-flow 24s linear infinite;
+  }
+  .mk-carousel-wrap:hover .mk-carousel-track {
+    animation-play-state: paused;
+  }
+
+  /* Subtle float for floating UI chips inside feature cards */
+  @keyframes mk-chip-float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-1deg);
+    }
+    50% {
+      transform: translateY(-6px) rotate(1deg);
+    }
+  }
+  .mk-chip-float {
+    animation: mk-chip-float 5s ease-in-out infinite;
+  }
+
+  /* Ghost-button hover shine */
+  @keyframes mk-shine-pass {
+    0% {
+      transform: translateX(-120%) skewX(-20deg);
+    }
+    100% {
+      transform: translateX(220%) skewX(-20deg);
+    }
+  }
+  .mk-shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%) skewX(-20deg);
+    pointer-events: none;
+  }
+  .mk-shine:hover::after {
+    animation: mk-shine-pass 900ms ease-out;
+  }
 }

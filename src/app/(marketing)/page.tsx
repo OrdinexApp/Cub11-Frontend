@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LandingPage } from "@/components/marketing/LandingPage";
+import { LandingPageLight } from "@/components/marketing/LandingPageLight";
 
 export const metadata: Metadata = {
   title: "Cubell — AI Video Studio for Reels, Shorts & TikToks",
@@ -14,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function MarketingHomePage() {
-  return <LandingPage />;
+  return <LandingPageLight />;
 }
