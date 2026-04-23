@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Sparkles, ArrowRight } from "lucide-react";
 
 interface Props {
   title?: string;
@@ -17,26 +16,39 @@ export function EmptyState({
   ctaHref = "/new",
   onCta,
 }: Props) {
+  const cta = (
+    <span className="inline-flex h-11 items-center gap-2 rounded-full bg-[#7C3AED] px-6 text-[15px] font-semibold text-white shadow-[0_10px_15px_-3px_rgba(124,58,237,0.3)] transition-all hover:-translate-y-0.5 hover:bg-[#6D28D9] hover:shadow-[0_20px_25px_-5px_rgba(124,58,237,0.3)]">
+      <Sparkles className="h-4 w-4" />
+      {ctaLabel}
+      <ArrowRight className="h-4 w-4" />
+    </span>
+  );
+
   return (
-    <div className="grid place-items-center rounded-3xl border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center">
-      <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500/30 to-violet-600/20">
-        <Sparkles className="h-7 w-7 text-primary" />
+    <div className="relative grid place-items-center overflow-hidden rounded-3xl border border-dashed border-gray-300/70 bg-white/60 px-6 py-16 text-center backdrop-blur-sm">
+      {/* Soft ambient glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_30%,rgba(124,58,237,0.10),transparent_70%)]"
+      />
+
+      <div className="relative grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-[0_18px_40px_-12px_rgba(124,58,237,0.55)]">
+        <Sparkles className="h-7 w-7" />
       </div>
-      <h3 className="mt-4 text-xl font-semibold tracking-tight">{title}</h3>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
-      {onCta ? (
-        <Button size="lg" className="mt-6" onClick={onCta}>
-          <Sparkles className="h-4 w-4" />
-          {ctaLabel}
-        </Button>
-      ) : (
-        <Button asChild size="lg" className="mt-6">
-          <Link href={ctaHref}>
-            <Sparkles className="h-4 w-4" />
-            {ctaLabel}
-          </Link>
-        </Button>
-      )}
+      <h3 className="relative mt-5 text-xl font-semibold tracking-tight text-gray-900">
+        {title}
+      </h3>
+      <p className="relative mt-2 max-w-sm text-sm text-gray-600">{description}</p>
+
+      <div className="relative mt-6">
+        {onCta ? (
+          <button type="button" onClick={onCta}>
+            {cta}
+          </button>
+        ) : (
+          <Link href={ctaHref}>{cta}</Link>
+        )}
+      </div>
     </div>
   );
 }

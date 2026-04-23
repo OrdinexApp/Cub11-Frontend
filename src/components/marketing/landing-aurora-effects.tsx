@@ -13,9 +13,22 @@ import { cn } from "@/lib/utils";
 /*          `mk-aurora-cross`, and `mk-aurora-sweep` in globals.css.           */
 /* ========================================================================== */
 
-export function AuroraBackground() {
+export function AuroraBackground({
+  variant = "full",
+}: {
+  /**
+   * `full`   — 3-layer aurora (drift + cross + sweep). Used on marketing
+   *            and auth pages where the background is the hero.
+   * `subtle` — 2-layer ambient wash (drift + cross, reduced opacity).
+   *            Used behind data-dense post-login app pages.
+   */
+  variant?: "full" | "subtle";
+}) {
   return (
-    <div aria-hidden className="mk-aurora-bg">
+    <div
+      aria-hidden
+      className={cn("mk-aurora-bg", variant === "subtle" && "mk-aurora-bg--subtle")}
+    >
       <div className="mk-aurora-inner" />
     </div>
   );

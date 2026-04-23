@@ -4,10 +4,8 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { ArrowRight, Wand2, LayoutTemplate, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTemplates } from "@/lib/api/use-templates";
 import { useGenerationStore } from "@/lib/stores/generation-store";
@@ -30,12 +28,10 @@ export function TemplateOrPromptStep() {
   const setPrompt = useGenerationStore((s) => s.setPrompt);
   const stored = useGenerationStore();
 
-  const [tab, setTab] = React.useState<"template" | "prompt">(
-    initialTemplate ? "template" : "template",
-  );
-  const [selectedTemplateId, setSelectedTemplateId] = React.useState<string | undefined>(
-    initialTemplate ?? stored.templateId,
-  );
+  const [tab, setTab] = React.useState<"template" | "prompt">("template");
+  const [selectedTemplateId, setSelectedTemplateId] = React.useState<
+    string | undefined
+  >(initialTemplate ?? stored.templateId);
   const [text, setText] = React.useState(stored.prompt ?? "");
 
   function handleNext() {
@@ -55,20 +51,24 @@ export function TemplateOrPromptStep() {
 
   return (
     <div>
-      <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="w-full">
-        <TabsList className="w-full md:w-auto">
-          <TabsTrigger value="template" className="flex-1 md:flex-none">
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setTab(v as typeof tab)}
+        className="w-full"
+      >
+        <TabsList>
+          <TabsTrigger value="template">
             <LayoutTemplate className="h-4 w-4" />
             Pick a template
           </TabsTrigger>
-          <TabsTrigger value="prompt" className="flex-1 md:flex-none">
+          <TabsTrigger value="prompt">
             <Wand2 className="h-4 w-4" />
             Describe it
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="template">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+        <TabsContent value="template" className="mt-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {(templates ?? []).slice(0, 12).map((t) => {
               const active = selectedTemplateId === t.id;
               return (
@@ -77,34 +77,33 @@ export function TemplateOrPromptStep() {
                   type="button"
                   onClick={() => setSelectedTemplateId(t.id)}
                   className={cn(
-                    "relative overflow-hidden rounded-2xl border bg-card text-left transition",
+                    "group relative overflow-hidden rounded-2xl border bg-white text-left transition-all",
                     active
-                      ? "border-primary ring-2 ring-primary/40"
-                      : "border-border/60 hover:border-primary/30",
+                      ? "border-[#7C3AED] shadow-[0_10px_30px_-12px_rgba(124,58,237,0.35)] ring-2 ring-[#7C3AED]/25"
+                      : "border-gray-200 shadow-sm hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md",
                   )}
                 >
-                  <div className="relative aspect-[9/16] w-full overflow-hidden">
+                  <div className="relative aspect-[9/16] w-full overflow-hidden bg-gray-100">
                     <Image
                       src={t.thumbnail}
                       alt={t.title}
                       fill
                       sizes="(max-width: 768px) 50vw, 25vw"
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                     {active && (
-                      <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
-                        <Check className="h-3.5 w-3.5" />
+                      <span className="absolute right-2.5 top-2.5 grid h-7 w-7 place-items-center rounded-full bg-[#7C3AED] text-white shadow-lg">
+                        <Check className="h-4 w-4" />
                       </span>
                     )}
-                    <div className="absolute inset-x-2 bottom-2">
-                      <p className="text-[10px] uppercase tracking-wider text-white/70">
-                        {PLATFORM_EMOJI[t.platform]} {PLATFORM_LABELS[t.platform]}
-                      </p>
-                      <p className="text-xs font-semibold text-white line-clamp-1">
-                        {t.title}
-                      </p>
-                    </div>
+                  </div>
+                  <div className="px-3 py-3">
+                    <p className="text-[10.5px] font-semibold uppercase tracking-wider text-[#7C3AED]">
+                      {PLATFORM_EMOJI[t.platform]} {PLATFORM_LABELS[t.platform]}
+                    </p>
+                    <p className="mt-1 line-clamp-1 text-[13.5px] font-semibold text-gray-900">
+                      {t.title}
+                    </p>
                   </div>
                 </button>
               );
@@ -112,38 +111,46 @@ export function TemplateOrPromptStep() {
           </div>
         </TabsContent>
 
-        <TabsContent value="prompt">
-          <div className="space-y-3">
+        <TabsContent value="prompt" className="mt-6">
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <Textarea
               placeholder="A cinematic close-up of someone lighting a clay diya, warm bokeh background, festive atmosphere…"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[160px] text-base"
+              className="min-h-[160px] border-0 bg-transparent p-0 text-[15px] shadow-none focus-visible:ring-0"
             />
-            <div className="flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-100 pt-4">
+              <span className="text-[12px] font-medium text-gray-500">
+                Try:
+              </span>
               {SUGGESTIONS.map((s) => (
-                <Badge
+                <button
                   key={s}
-                  variant="outline"
-                  className="cursor-pointer hover:border-primary/40 hover:text-primary py-1 px-2"
+                  type="button"
                   onClick={() => setText(s)}
+                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-[12px] font-medium text-gray-700 transition-colors hover:border-[#7C3AED]/40 hover:bg-[#7C3AED]/5 hover:text-[#7C3AED]"
                 >
                   {s}
-                </Badge>
+                </button>
               ))}
             </div>
           </div>
         </TabsContent>
       </Tabs>
 
-      <div className="mt-8 flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">
+      <div className="mt-10 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <p className="text-[12.5px] text-gray-500">
           Step 1 of 3 · You won&apos;t be charged until you accept a render.
         </p>
-        <Button size="lg" onClick={handleNext} disabled={!canContinue}>
+        <button
+          type="button"
+          onClick={handleNext}
+          disabled={!canContinue}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#7C3AED] px-6 text-[14px] font-semibold text-white shadow-[0_10px_20px_-6px_rgba(124,58,237,0.45)] transition-all hover:-translate-y-0.5 hover:bg-[#6D28D9] hover:shadow-[0_14px_24px_-8px_rgba(124,58,237,0.55)] disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-[0_10px_20px_-6px_rgba(124,58,237,0.45)]"
+        >
           Pick a style
           <ArrowRight className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
     </div>
   );

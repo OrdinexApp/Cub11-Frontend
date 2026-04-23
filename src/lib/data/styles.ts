@@ -3,7 +3,10 @@ export interface StyleOption {
   name: string;
   description: string;
   emoji: string;
+  /** Tailwind gradient used as a soft pastel accent behind the card. */
   gradient: string;
+  /** Solid accent color for the emoji chip. */
+  accent: string;
 }
 
 export const STYLES: StyleOption[] = [
@@ -12,34 +15,39 @@ export const STYLES: StyleOption[] = [
     name: "Cinematic",
     description: "Film-grade lighting and slow motion",
     emoji: "🎬",
-    gradient: "from-amber-500/30 via-rose-500/20 to-indigo-500/20",
+    gradient: "from-amber-100 via-rose-100 to-indigo-100",
+    accent: "from-amber-400 to-rose-500",
   },
   {
     id: "cute",
     name: "Cute",
     description: "Soft pastels, friendly vibes",
     emoji: "🌸",
-    gradient: "from-pink-400/30 via-fuchsia-400/20 to-purple-400/20",
+    gradient: "from-pink-100 via-fuchsia-100 to-purple-100",
+    accent: "from-pink-400 to-fuchsia-500",
   },
   {
     id: "bold",
     name: "Bold",
     description: "High contrast, punchy edits",
     emoji: "⚡",
-    gradient: "from-yellow-400/30 via-orange-500/25 to-red-500/20",
+    gradient: "from-yellow-100 via-orange-100 to-red-100",
+    accent: "from-yellow-400 to-orange-500",
   },
   {
     id: "clean",
     name: "Clean",
     description: "Minimal, clean, brand-safe",
     emoji: "✨",
-    gradient: "from-sky-400/25 via-indigo-400/20 to-violet-400/20",
+    gradient: "from-sky-100 via-indigo-100 to-violet-100",
+    accent: "from-sky-400 to-violet-500",
   },
   {
     id: "trendy",
     name: "Trendy",
     description: "Whatever the algorithm loves now",
     emoji: "🔥",
-    gradient: "from-emerald-400/25 via-teal-400/20 to-cyan-400/25",
+    gradient: "from-emerald-100 via-teal-100 to-cyan-100",
+    accent: "from-emerald-400 to-teal-500",
   },
 ];

@@ -10,8 +10,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { GenerationProgress } from "./GenerationProgress";
 import { useGenerationStore } from "@/lib/stores/generation-store";
 import { useMe } from "@/lib/api/use-auth";
@@ -23,6 +21,7 @@ import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { STYLES } from "@/lib/data/styles";
 import type { TemplatePlatform } from "@/types/template";
 import { getFriendlyErrorMessage } from "@/lib/ui/error-messages";
+import { cn } from "@/lib/utils";
 
 export function PreviewStep({ projectId }: { projectId?: string }) {
   const router = useRouter();
@@ -119,8 +118,6 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
       });
 
       reset();
-      // The mutation now returns immediately after submit; the editor will
-      // poll the job in the background and update the clip on success.
       router.push(
         `/projects/${targetProjectId}/edit/${result.clip.id}?job=${result.job.id}`,
       );
@@ -129,7 +126,8 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
       const status = (err as { status?: number })?.status;
       if (status === 402) {
         setRenderError(
-          msg || "You don't have enough credits for this render. Top up to continue."
+          msg ||
+            "You don't have enough credits for this render. Top up to continue.",
         );
         return;
       }
@@ -144,8 +142,9 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
 
   return (
     <div>
-      <div className="grid gap-6 md:grid-cols-[1fr_300px]">
-        <div className="overflow-hidden rounded-3xl border border-border/60 bg-card aspect-[9/16] md:aspect-[9/16] max-h-[70dvh] mx-auto w-full max-w-sm relative">
+      <div className="grid gap-6 md:grid-cols-[1fr_320px]">
+        {/* Video preview */}
+        <div className="relative mx-auto aspect-[9/16] w-full max-w-sm max-h-[70dvh] overflow-hidden rounded-3xl border border-gray-200 bg-gray-50 shadow-[0_20px_60px_-20px_rgba(17,24,39,0.18)]">
           <AnimatePresence mode="wait">
             {isGenerating || !previewUrl ? (
               <motion.div
@@ -163,7 +162,7 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
                 initial={{ opacity: 0, scale: 1.02 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full"
               >
                 <VideoPlayer
                   src={previewUrl}
@@ -180,73 +179,77 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
           </AnimatePresence>
 
           {!isGenerating && previewUrl && (
-            <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-              <Badge variant="secondary" className="backdrop-blur">
+            <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2">
+              <span className="inline-flex items-center rounded-full border border-white/20 bg-black/40 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
                 Preview · 480p
-              </Badge>
-              <Badge variant="success" className="backdrop-blur">
-                <ShieldCheck className="mr-1 h-3 w-3" /> Free
-              </Badge>
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-100 backdrop-blur">
+                <ShieldCheck className="h-3 w-3" /> Free
+              </span>
             </div>
           )}
         </div>
 
+        {/* Right rail */}
         <aside className="flex flex-col gap-4">
-          <div className="rounded-2xl border border-border/60 bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
               Generating
             </p>
-            <p className="mt-1 text-sm font-semibold leading-snug line-clamp-3">
+            <p className="mt-1.5 line-clamp-3 text-[14px] font-semibold leading-snug text-gray-900">
               {template?.title ?? gen.prompt}
             </p>
             {style && (
-              <Badge variant="outline" className="mt-3">
-                {style.emoji} {style.name}
-              </Badge>
+              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#7C3AED]/20 bg-[#7C3AED]/8 px-2.5 py-0.5 text-[11.5px] font-semibold text-[#7C3AED]">
+                <span>{style.emoji}</span> {style.name}
+              </span>
             )}
           </div>
 
-          <div className="rounded-2xl border border-primary/20 bg-primary/[0.06] p-4">
+          <div className="rounded-2xl border border-[#7C3AED]/20 bg-gradient-to-br from-[#7C3AED]/[0.04] to-[#EC4899]/[0.04] p-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
                 HD render cost
               </span>
-              <span className="font-mono text-2xl font-semibold">
+              <span className="font-mono text-2xl font-semibold text-gray-900">
                 {credits}
-                <span className="text-sm text-muted-foreground"> cr</span>
+                <span className="text-sm text-gray-500"> cr</span>
               </span>
             </div>
-            <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-success">
+            <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
               <ShieldCheck className="h-3 w-3" />
               Refunded automatically if HD render fails
             </p>
-            <div className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <div className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-gray-500">
               <Coins className="h-3 w-3" />
               You have {balance} credits
             </div>
           </div>
 
           {renderError && (
-            <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-[12.5px] text-red-700">
               <p>{renderError}</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-2 h-7 px-2 text-destructive hover:bg-destructive/10"
+              <button
+                type="button"
                 onClick={() => void acceptAndRender()}
                 disabled={isGenerating || isRendering || !previewUrl}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 Retry render
-              </Button>
+              </button>
             </div>
           )}
 
           <div className="flex flex-col gap-2">
-            <Button
-              size="lg"
+            <button
+              type="button"
               onClick={acceptAndRender}
               disabled={isGenerating || isRendering || !previewUrl}
+              className={cn(
+                "inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#7C3AED] px-6 text-[14px] font-semibold text-white shadow-[0_10px_20px_-6px_rgba(124,58,237,0.45)] transition-all hover:-translate-y-0.5 hover:bg-[#6D28D9] hover:shadow-[0_14px_24px_-8px_rgba(124,58,237,0.55)]",
+                "disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-[0_10px_20px_-6px_rgba(124,58,237,0.45)]",
+              )}
             >
               {isRendering ? (
                 <>
@@ -259,17 +262,17 @@ export function PreviewStep({ projectId }: { projectId?: string }) {
                   Accept & render HD
                 </>
               )}
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
+            </button>
+            <button
+              type="button"
               onClick={runPreview}
               disabled={isGenerating || isRendering}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-6 text-[14px] font-semibold text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RotateCcw className="h-4 w-4" />
               Try another preview
-            </Button>
-            <p className="text-center text-[11px] text-muted-foreground">
+            </button>
+            <p className="text-center text-[11px] text-gray-500">
               Previews are always free. Generate as many as you like.
             </p>
           </div>

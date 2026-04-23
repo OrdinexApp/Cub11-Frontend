@@ -13,7 +13,55 @@
   --radius-2xl: 1.5rem;
 }
 
+/* -------------------------------------------------------------------
+   LIGHT THEME — default (aurora palette)
+   Paired to marketing landing: primary #7C3AED (violet-600),
+   headings #111827, body #4b5563, muted #6b7280, border #e4e4e7.
+------------------------------------------------------------------- */
 :root {
+  /* Transparent so the aurora / app surface behind it shows through.
+     Actual page fills are applied via .mk-landing-root or .mk-app-root. */
+  --background: 0 0% 100%;
+  --foreground: 222 27% 11%; /* #111827 */
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 27% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 27% 11%;
+
+  --primary: 262 83% 58%; /* #7C3AED violet-600 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 240 5% 96%; /* near #f4f4f5 */
+  --secondary-foreground: 222 27% 11%;
+
+  --muted: 240 5% 96%;
+  --muted-foreground: 220 9% 46%; /* #6b7280 */
+
+  --accent: 262 100% 96%; /* violet-50 */
+  --accent-foreground: 262 83% 28%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --success: 158 64% 40%; /* emerald-600 */
+  --success-foreground: 0 0% 100%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+
+  --border: 240 5% 90%; /* #e4e4e7 */
+  --input: 240 5% 90%;
+  --ring: 262 83% 58%;
+
+  --radius: 1rem;
+}
+
+/* -------------------------------------------------------------------
+   DARK THEME — opt-in via `<html class="dark">` (legacy)
+------------------------------------------------------------------- */
+.dark {
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
 
@@ -47,8 +95,6 @@
   --border: 240 4% 18%;
   --input: 240 4% 16%;
   --ring: 239 84% 67%;
-
-  --radius: 1rem;
 }
 
 @theme inline {
@@ -688,16 +734,24 @@
      AURORA LANDING (v3) — animated gradient + cursor + ripple
      ============================================================= */
 
-  /* Route-level override: when the landing page mounts, unlock the
-     surface so the fixed aurora gradient can show through.         */
+  /* Route-level base surfaces. Both keep the body transparent so the
+     fixed aurora gradient paints through, with a barely-tinted fallback
+     colour in case the aurora fails to render (old Safari, etc.).
+       • .mk-landing-root — marketing / auth (richer lavender hint)
+       • .mk-app-root     — post-login app (neutral near-white)
+  */
   html.mk-landing-root,
-  html.mk-landing-root body {
+  html.mk-landing-root body,
+  html.mk-app-root,
+  html.mk-app-root body {
     background: transparent !important;
     color: #111827;
   }
   html.mk-landing-root {
-    /* Fallback barely-tinted white — matches #aurora-bg from the HTML reference */
     background-color: #faf8ff !important;
+  }
+  html.mk-app-root {
+    background-color: #f5f5f7 !important;
   }
 
   /* Aurora v4 — creative multi-angle waves (21st.dev / flowstep technique).
@@ -849,6 +903,23 @@
     .mk-aurora-inner::after {
       animation: none !important;
     }
+  }
+
+  /* Subtle variant — used behind data-dense app pages.
+     Drops the difference-blend sweep layer (::after) and halves the
+     base opacity so it reads as an ambient wash, never competing
+     with form fields, tables, or the editor timeline. */
+  .mk-aurora-bg--subtle {
+    background: #fafafa;
+  }
+  .mk-aurora-bg--subtle .mk-aurora-inner {
+    opacity: 0.28;
+  }
+  .mk-aurora-bg--subtle .mk-aurora-inner::after {
+    display: none;
+  }
+  .mk-aurora-bg--subtle .mk-aurora-inner::before {
+    opacity: 0.5;
   }
 
   /* Custom cursor (desktop only, respects reduced motion) */
